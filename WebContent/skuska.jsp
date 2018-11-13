@@ -15,6 +15,7 @@
     <body> 
         <div id="result">
             <h3>${requestScope["message"]}</h3>
+            <h1>${products} </h1>
         </div>
       
     </body>

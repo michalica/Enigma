@@ -7,8 +7,6 @@ import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -24,24 +22,25 @@ import org.apache.commons.codec.binary.Base64;
 
 public class AsymmetricCryptography {
 	private Cipher cipher;
-	private KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-	private KeyPair kp;
-  
 
 	public AsymmetricCryptography() throws NoSuchAlgorithmException, NoSuchPaddingException {
 		this.cipher = Cipher.getInstance("RSA");
-		this.kpg.initialize(2048);
-		this.kp = kpg.genKeyPair();
 	}
 
 	// https://docs.oracle.com/javase/8/docs/api/java/security/spec/PKCS8EncodedKeySpec.html
-	public PrivateKey getPrivate() throws Exception {
-		return kp.getPrivate();
+	public PrivateKey getPrivate(String filename) throws Exception {
+		byte[] keyBytes = Files.readAllBytes(new File(filename).toPath());
+		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+		KeyFactory kf = KeyFactory.getInstance("RSA");
+		return kf.generatePrivate(spec);
 	}
 
 	// https://docs.oracle.com/javase/8/docs/api/java/security/spec/X509EncodedKeySpec.html
-	public PublicKey getPublic() throws Exception {
-		return kp.getPublic();
+	public PublicKey getPublic(String filename) throws Exception {
+		byte[] keyBytes = Files.readAllBytes(new File(filename).toPath());
+		X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+		KeyFactory kf = KeyFactory.getInstance("RSA");
+		return kf.generatePublic(spec);
 	}
 
 	public void encryptFile(byte[] input, File output, PrivateKey key) 
@@ -87,25 +86,25 @@ public class AsymmetricCryptography {
 		return fbytes;
 	}
 
-//	public static void main(String[] args) throws Exception {
-//		AsymmetricCryptography ac = new AsymmetricCryptography();
-//		PrivateKey privateKey = ac.getPrivate("KeyPair/privateKey");
-//		PublicKey publicKey = ac.getPublic("KeyPair/publicKey");
-//
-////		String msg = "Cryptography is fun!";
-////		String encrypted_msg = ac.encryptText(msg, privateKey);
-////		String decrypted_msg = ac.decryptText(encrypted_msg, publicKey);
-////		System.out.println("Original Message: " + msg + 
-////			"\nEncrypted Message: " + encrypted_msg
-////			+ "\nDecrypted Message: " + decrypted_msg);
-//
-//		if (new File("KeyPair/text.txt").exists()) {
-//			ac.encryptFile(ac.getFileInBytes(new File("KeyPair/text.txt")), 
-//				new File("KeyPair/text_encrypted.txt"),privateKey);
-//			ac.decryptFile(ac.getFileInBytes(new File("KeyPair/text_encrypted.txt")),
-//				new File("KeyPair/text_decrypted.txt"), publicKey);
-//		} else {
-//			System.out.println("Create a file text.txt under folder KeyPair");
-//		}
-//	}
+	public static void main(String[] args) throws Exception {
+		AsymmetricCryptography ac = new AsymmetricCryptography();
+		PrivateKey privateKey = ac.getPrivate("KeyPair/privateKey");
+		PublicKey publicKey = ac.getPublic("KeyPair/publicKey");
+
+		String msg = "Cryptography is fun!";
+		String encrypted_msg = ac.encryptText(msg, privateKey);
+		String decrypted_msg = ac.decryptText(encrypted_msg, publicKey);
+		System.out.println("Original Message: " + msg + 
+			"\nEncrypted Message: " + encrypted_msg
+			+ "\nDecrypted Message: " + decrypted_msg);
+
+		if (new File("KeyPair/text.txt").exists()) {
+			ac.encryptFile(ac.getFileInBytes(new File("KeyPair/text.txt")), 
+				new File("KeyPair/text_encrypted.txt"),privateKey);
+			ac.decryptFile(ac.getFileInBytes(new File("KeyPair/text_encrypted.txt")),
+				new File("KeyPair/text_decrypted.txt"), publicKey);
+		} else {
+			System.out.println("Create a file text.txt under folder KeyPair");
+		}
+	}
 }

@@ -12,7 +12,6 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-
 public class CryptoUtils {
 	
 private static final String ALGORITHM = "AES";
